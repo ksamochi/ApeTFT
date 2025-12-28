@@ -52,9 +52,8 @@ JC3248W535_Touch Touch;
 Ticker Lv_Tick;
 static lv_draw_buf_t Lv_DrawBufInfo1;
 static lv_color_t Lv_DrawBuf1[SCREEN_WIDTH * LV_BUF_LINE];
-static uint16_t* LcdBuf = nullptr;
-
-static lv_indev_t *Lv_Indev;
+//static lv_color_t Lv_DrawBuf2[SCREEN_WIDTH * LV_BUF_LINE];
+lv_indev_t *gLv_Indev = nullptr;
 
 static const axs15231b_lcd_init_cmd_t lcd_init_cmds[] = {
     {0xBB, (uint8_t []){0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5A, 0xA5}, 8, 0},
@@ -165,9 +164,9 @@ void setup() {
   lv_display_set_draw_buffers(disp, &Lv_DrawBufInfo1, nullptr);
   lv_display_set_flush_cb(disp, my_disp_cb);
 
-  Lv_Indev = lv_indev_create();
-  lv_indev_set_type(Lv_Indev, LV_INDEV_TYPE_POINTER);
-  lv_indev_set_read_cb(Lv_Indev, my_indev_cb);
+  gLv_Indev = lv_indev_create();
+  lv_indev_set_type(gLv_Indev, LV_INDEV_TYPE_POINTER);
+  lv_indev_set_read_cb(gLv_Indev, my_indev_cb);
 
   /* Initialize SquereLineStudio UI */
   ui_init();

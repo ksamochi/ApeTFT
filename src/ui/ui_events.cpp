@@ -8,12 +8,12 @@
 #include "../myOdoTrip.h"
 #include "../myDispCtrl.h"
 
-static lv_timer_t * appl_timer;
+extern lv_indev_t *gLv_Indev;
 
 /* --------------------------------------------------------------- System Event */
 void initEvent(lv_event_t * e)
 {
-
+	lv_indev_set_long_press_time(gLv_Indev, 2000);
 }
 
 /* ---------------------------------------------------------------- user Events */
