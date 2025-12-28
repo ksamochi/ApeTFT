@@ -86,24 +86,36 @@ void myDispCtrl_Main(void)
         }
     }
 
-    DispCycle_Cnt = (DispCycle_Cnt + 1) % 10;
+    DispCycle_Cnt = (DispCycle_Cnt + 1) % 100;
 
     if (myTacho_EngOn()) demo_mode = false;
     if (demo_mode) {
         disp_demo();
     } else {
+        if (DispCycle_Cnt %10 == 0) disp_TaArc();
+        if (DispCycle_Cnt %10 == 5) disp_Neut();
         switch(DispCycle_Cnt){
         case 0:
-            disp_TaArc();
-            disp_SpDig();
-            disp_Neut();
+        case 50:
             disp_TaDig();
+            break;
+        case 10:
+        case 60:
+            disp_SpDig();
+        case 20:
+        case 70:
             disp_OdoTrip();
+            break;
+        case 30:
+        case 80:
             disp_LFW();
+            break;
+        case 40:
+        case 90:
             disp_Clk();
             break;
         default:
-        break;
+            break;
         }
     }
 }
@@ -124,7 +136,6 @@ void myDispCtrl_SwOpnImg(void)
 }
 
 /* **************************************************************** Sub Process */
-/* ------------------------------------------------------------- disp_updOpnImg */
 static void disp_updOpnImg(void)
 {
     static const void* op_img_table[5] = {
@@ -138,7 +149,6 @@ static void disp_updOpnImg(void)
     lv_obj_set_style_bg_image_src(ui_Opn, op_img_table[OpnImg], LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
-/* ----------------------------------------------------------------------- demo */
 static void disp_demo()
 {
     lv_obj_t* screen = lv_scr_act();
@@ -183,9 +193,31 @@ static void disp_demo()
     spDisp = spDisp + (spMark - spDisp) / Response + ((DemoCycle_Cnt %3) -1) *20;
     taDisp = taDisp + (taMark - taDisp) / Response + ((DemoCycle_Cnt %3) -1) *200;
 
-    if (DispCycle_Cnt == 0) {
-        /* 100ms Cyclic Processes */
-        char buf[8];
+
+    if (DispCycle_Cnt %10 == 0) {
+        lv_arc_set_value(ui_Dark_TachoBarDark, (taDisp + 125) / 250);
+        lv_arc_set_value(ui_Light_TachoBarLight, (taDisp + 125 ) / 250);
+    }
+    if (DispCycle_Cnt %10 == 5) {
+        if (spDisp < 100){
+            lv_obj_remove_flag(ui_Dark_NeutDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(ui_Light_NeutLight, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(ui_Dark_NeutDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Light_NeutLight, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+
+    char buf[8];
+    switch(DispCycle_Cnt){
+    case 0:
+    case 50:
+        snprintf(buf, sizeof(buf), "%04d", (taDisp) %10000);
+        lv_textarea_set_text(ui_Dark_TaDgDark, buf);
+        lv_textarea_set_text(ui_Light_TaDgLight, buf);
+        break;
+    case 10:
+    case 60:
         if (spDisp < 30){
             lv_textarea_set_text(ui_Dark_SpDgDark100, " ");
             lv_textarea_set_text(ui_Light_SpDgLight100, " ");
@@ -201,52 +233,46 @@ static void disp_demo()
         }
         lv_textarea_set_text(ui_Dark_SpDgDark, buf);
         lv_textarea_set_text(ui_Light_SpDgLight, buf);
-
-        snprintf(buf, sizeof(buf), "%04d", (taDisp) %10000);
-        lv_textarea_set_text(ui_Dark_TaDgDark, buf);
-        lv_textarea_set_text(ui_Light_TaDgLight, buf);
-
-        lv_arc_set_value(ui_Dark_TachoBarDark, (taDisp + 125) / 250);
-        lv_arc_set_value(ui_Light_TachoBarLight, (taDisp + 125 ) / 250);
-
-        if (spDisp < 100){
-            lv_obj_remove_flag(ui_Dark_NeutDark, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_remove_flag(ui_Light_NeutLight, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_add_flag(ui_Dark_NeutDark, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(ui_Light_NeutLight, LV_OBJ_FLAG_HIDDEN);
+        break;
+    case 20:
+    case 70:
+        switch (OdoTripSel) {
+        case 0: /* tripmeter */
+            lv_obj_add_flag(ui_Dark_OdoLblDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(ui_Dark_TripLblDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Light_OdoLblLight, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(ui_Light_TripLblLight, LV_OBJ_FLAG_HIDDEN);
+            break;
+        case 1: /* odometer */
+            lv_obj_remove_flag(ui_Dark_OdoLblDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Dark_TripLblDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(ui_Light_OdoLblLight, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Light_TripLblLight, LV_OBJ_FLAG_HIDDEN);
+            break;
+        default:
+            lv_obj_add_flag(ui_Dark_OdoLblDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Dark_TripLblDark, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Light_OdoLblLight, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Light_TripLblLight, LV_OBJ_FLAG_HIDDEN);
+            break;
         }
-
-            switch (OdoTripSel)
-    {
-    case 0: /* tripmeter */
-        lv_obj_add_flag(ui_Dark_OdoLblDark, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_remove_flag(ui_Dark_TripLblDark, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(ui_Light_OdoLblLight, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_remove_flag(ui_Light_TripLblLight, LV_OBJ_FLAG_HIDDEN);
-        break;
-    case 1: /* odometer */
-        lv_obj_remove_flag(ui_Dark_OdoLblDark, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(ui_Dark_TripLblDark, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_remove_flag(ui_Light_OdoLblLight, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(ui_Light_TripLblLight, LV_OBJ_FLAG_HIDDEN);
-        break;
-    default:
-        lv_obj_add_flag(ui_Dark_OdoLblDark, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(ui_Dark_TripLblDark, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(ui_Light_OdoLblLight, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(ui_Light_TripLblLight, LV_OBJ_FLAG_HIDDEN);
-        break;
-    }
         snprintf(buf, sizeof(buf), "%05d", odDisp);
         lv_textarea_set_text(ui_Dark_OdoTripDark, buf);
         lv_textarea_set_text(ui_Light_OdoTripLight, buf);
-
+        break;
+    case 30:
+    case 80:
+        //disp_LFW();
+        break;
+    case 40:
+    case 90:
         disp_Clk();
+        break;
+    default:
+        break;
     }
 }
 
-/* ------------------------------------------------------------- normal display */
 static void disp_TaArc()
 {
     taDisp = myTacho_Disp();
