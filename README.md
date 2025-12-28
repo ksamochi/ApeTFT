@@ -183,5 +183,5 @@ You are solely responsible for any risks associated with its use.
 
 ## Author
 - Ksamochi in Japan
-- GitHub: 	https://github.com/yourname
+- GitHub: 	https://github.com/ksamochi
 - License: 	MIT
