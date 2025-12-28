@@ -20,7 +20,7 @@
 #ifndef JC3248W535_H
 #define JC3248W535_H
 
-#include "JC3248W535_Display.h"
+//#include "JC3248W535_Display.h"
 #include "JC3248W535_Touch.h"
 
 // Hardware pin definitions (for reference)
