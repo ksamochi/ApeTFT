@@ -53,6 +53,8 @@ Ticker Lv_Tick;
 static lv_draw_buf_t Lv_DrawBufInfo1;
 static lv_color_t Lv_DrawBuf1[SCREEN_WIDTH * LV_BUF_LINE];
 //static lv_color_t Lv_DrawBuf2[SCREEN_WIDTH * LV_BUF_LINE];
+static uint16_t* LcdBuf = nullptr;
+
 lv_indev_t *gLv_Indev = nullptr;
 
 static const axs15231b_lcd_init_cmd_t lcd_init_cmds[] = {
