@@ -181,6 +181,21 @@ This software is provided as-is, without any warranty of any kind.
 The author is not liable for any loss, damage, malfunction, or injury arising from the installation or use of this project.  
 You are solely responsible for any risks associated with its use.
 
+
+## Acknowledgements
+This project builds upon the great work of many open‑source contributors and hardware vendors.  
+Special thanks to:
+
+- The LVGL community for providing an excellent graphics library and documentation.
+- SquareLine Studio for offering an intuitive UI design workflow.
+- Espressif Systems for the ESP32‑S3 platform and related SDKs.
+- The developers of AXS15231B and JC3248W535 drivers whose prior work helped accelerate the display bring‑up.
+- All contributors who share knowledge, examples, and insights that make embedded development more accessible.
+- Microsoft Copilot for providing continuous technical insights, documentation refinement, and architectural guidance throughout the development process.
+
+Your work has been invaluable in shaping this project.
+
+
 ## Author
 - Ksamochi in Japan
 - GitHub: 	https://github.com/ksamochi

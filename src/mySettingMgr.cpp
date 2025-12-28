@@ -56,7 +56,7 @@ void mySettingMgr_Init(void)
 
         /* comma sepalate */
         c_pos = line.indexOf(',');
-        if (c_pos < 0) continue;
+        if (c_pos <= 0) continue;
 
         String keyStr = line.substring(0, c_pos);
         keyStr.trim();

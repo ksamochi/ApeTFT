@@ -7,6 +7,9 @@
 #    remove the SD card, or comment out with / or # or '
 # * characters / # ' are treated as comment markers. 
 #   so values containing URL-like strings (e.g. `http://example.com`)
+# * Make sure the file is encoded in UTF-8 without BOM.
+# * If you edit the file using Excel, avoid using multi-byte characters,
+#   as Excel may not preserve them correctly.
 #
 # key,data    // comments ( Leading and trailing spaces and tabs are trimmed. )
 #-------------------------------------------------------------------------------
