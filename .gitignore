@@ -1,0 +1,31 @@
+# VS Code / Theia
+.vscode/
+.theia/
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# ESP-IDF / Arduino build
+build/
+cmake-build-*/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+*.tmp
+*.bak
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Editor swap files
+*.swp
+*.swo
+.idea/
+
