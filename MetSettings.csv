@@ -1,0 +1,33 @@
+# MetSettings.csv
+#-------------------------------------------------------------------------------
+# 1. Make & Place this file in your SD-card
+# 2. Insert SD-card into device
+# 3. Restart or reset device
+# 4. After confirming that the settings have been applied,
+#    remove the SD card, or comment out with / or # or '
+# * characters / # ' are treated as comment markers. 
+#   so values containing URL-like strings (e.g. `http://example.com`)
+#
+# key,data    // comments ( Leading and trailing spaces and tabs are trimmed. )
+#-------------------------------------------------------------------------------
+
+//wifissid,xxxx's iPhone                ,// for myClock 
+//wifipass,xxxx-xxxx-xxxx-xxxx          ,// for myClock
+
+//spdrate,276912000                     ,// -0xFFFFFFFF[us/0.1kph] for mySpeed
+//spddelay,1                            ,// 1-255(fast - slow) for mySpeed
+
+//tarate",120000000                     ,// -0xFFFFFFFF[us/1rpm] for myTacho
+//tadelay,10                            ,// 1-255(fast - slow) for myTacho
+
+//odorate,7692                          ,// -65535[pulse/1km] for myOdoTrip
+//odoset,0                              ,// 0-1048575[km] for myOdoTrip ...preset at first
+
+//lfw_thresh,150                        ,// -99999[km] for myLFW
+
+//illum_dark,32                         ,// -255[/255_%duty] for myIllum
+//illum_light,255                       ,// -255[/255_%duty] for myIllum
+
+//Disp_OpnImg,0                         ,// 0-4 for myDispCtrl ...force initial pattern
+
+
