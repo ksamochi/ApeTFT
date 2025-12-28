@@ -37,7 +37,7 @@ static lv_draw_buf_t Lv_DrawBufInfo1;
 //static lv_draw_buf_t Lv_DrawBufInfo2;
 static lv_color_t Lv_DrawBuf1[SCREEN_WIDTH * LV_BUF_LINE];
 //static lv_color_t Lv_DrawBuf2[SCREEN_WIDTH * LV_BUF_LINE];
-static lv_indev_t *Lv_Indev;
+lv_indev_t *gLv_Indev = nullptr;
 
 /* ------------------------------------------------------- Function Proto-Types */
 static void lvgl_task(void *arg);
@@ -75,9 +75,9 @@ void setup() {
   //lv_display_set_draw_buffers(disp, &Lv_DrawBufInfo1, &Lv_DrawBufInfo2);
   lv_display_set_flush_cb(disp, my_disp_cb);
 
-  Lv_Indev = lv_indev_create();
-  lv_indev_set_type(Lv_Indev, LV_INDEV_TYPE_POINTER);
-  lv_indev_set_read_cb(Lv_Indev, my_indev_cb);
+  gLv_Indev = lv_indev_create();
+  lv_indev_set_type(gLv_Indev, LV_INDEV_TYPE_POINTER);
+  lv_indev_set_read_cb(gLv_Indev, my_indev_cb);
 
 
   /* Initialize SuereLine UI */
