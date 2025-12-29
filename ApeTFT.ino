@@ -9,22 +9,34 @@
 /*    lvgl v9.4.0 by ksvegabor                                                  */
 /*    SquereLineStudio by SquareLine Kft.                                       */
 /********************************************************************************/
-//#define LV_CONF_INCLUDE_SIMPLE
-#include "src/lvgl/lvgl.h"
+#include <Arduino.h>
+#include <Ticker.h>
+#include <esp_timer.h>
+#include <Wire.h>
+
+#include "driver/gpio.h"
+#include "driver/i2c.h"
 #include "driver/spi_master.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
+#include "esp_lcd_panel_interface.h"
 #include "src/esp_lcd_axs15231b/esp_lcd_axs15231b.h"
 
-#include "src/JC3248W535-Driver/src/JC3248W535.h"
-#include <Ticker.h>
-#include <esp_timer.h>
+#include "src/lvgl/lvgl.h"
 #include "src/ui/ui.h"
 #include "src/myApplMain.h"
 #include "src/mySettingMgr.h"
 #include "src/myIllum.h"
 
 /* ---------------------------------------------------------------- Definitions */
+#define SCREEN_WIDTH  (480U)  /* LVGL Screen size */
+#define SCREEN_HEIGHT (320U)  /* LVGL Screen size */
+#define LV_BUF_LINE (40U)     /* LVGL rendering area size at once */
+
+#define LCD_WIDTH   (320U)    /* Screen Buffer & LCD size */
+#define LCD_HEIGHT  (480U)    /* Screen Buffer & LCD size */
+#define DMA_BUF_LINE (80U)    /* DMA transportation chunk size */
+
 #define LCD_CS      (45)
 #define LCD_SCLK    (47)
 #define LCD_SDIO0   (21)
@@ -32,21 +44,18 @@
 #define LCD_SDIO2   (40)
 #define LCD_SDIO3   (39)
 #define LCD_RST     (-1)
-#define TFT_BL      (1)
-#define LCD_WIDTH   (320U)
-#define LCD_HEIGHT  (480U)
+#define LCD_BL      (1)
 
-#define SCREEN_WIDTH (480U) 
-#define SCREEN_HEIGHT (320U)  
-#define LV_BUF_LINE (40U)
-#define DMA_BUF_LINE (80U)
+#define TOUCH_I2C_ADDR  (0x3B)
+#define TOUCH_SCL   (8)
+#define TOUCH_SDA   (4)
+#define TOUCH_INT   (3)
+
 
 /* ------------------------------------------------------------------ Variables */
-static esp_lcd_panel_handle_t LcdPanel;
 static esp_lcd_panel_io_handle_t LcdIO;
+static esp_lcd_panel_handle_t LcdPanel;
 static SemaphoreHandle_t my_dma_smp;
-
-JC3248W535_Touch Touch;
 
 /* LVGL */
 Ticker Lv_Tick;
@@ -92,6 +101,9 @@ static const axs15231b_lcd_init_cmd_t lcd_init_cmds[] = {
     {0x11, (uint8_t []){0x00}, 0, 120},
     {0x2C, (uint8_t []){0x00, 0x00, 0x00, 0x00}, 4, 0},
 };
+static const uint8_t touch_read_cmds[] = {
+    0xb5, 0xab, 0xa5, 0x5a, 0x00, 0x00, 0x00, 0x08
+};
 
 /* ------------------------------------------------------- Function Proto-Types */
 static void lvgl_task(void *arg);
@@ -104,8 +116,6 @@ static void my_indev_cb(lv_indev_t * indev, lv_indev_data_t * data);
 /* *************************************************************** Main Process */
 /* ---------------------------------------------------------------------- setup */
 void setup() {
-  // esp_log_level_set("*", ESP_LOG_DEBUG);
-
   Serial.begin(115200);
   Serial.println("hello from ESP32");
 
@@ -118,6 +128,7 @@ void setup() {
   const spi_bus_config_t buscfg = AXS15231B_PANEL_BUS_QSPI_CONFIG(
     LCD_SCLK, LCD_SDIO0, LCD_SDIO1, LCD_SDIO2, LCD_SDIO3, LCD_WIDTH * LCD_HEIGHT * sizeof(uint16_t));
   ESP_ERROR_CHECK(spi_bus_initialize(SPI3_HOST, &buscfg, SPI_DMA_CH_AUTO));
+
 
   /* Initialize LCD libraries */
   const esp_lcd_panel_io_spi_config_t io_config = AXS15231B_PANEL_IO_QSPI_CONFIG(
@@ -152,9 +163,11 @@ void setup() {
   };
   esp_lcd_panel_io_register_event_callbacks(LcdIO, &cbs, NULL);
 
+
   /* Initialize Touch Panel */
-  Touch.begin();
-  Touch.setRotation(1, SCREEN_WIDTH, SCREEN_HEIGHT);
+  Wire.begin(TOUCH_SDA, TOUCH_SCL);
+  Wire.setClock(400000);  // 400kHz I2C speed
+
 
   /* Initialize LVGL */
   lv_init();
@@ -170,16 +183,20 @@ void setup() {
   lv_indev_set_type(gLv_Indev, LV_INDEV_TYPE_POINTER);
   lv_indev_set_read_cb(gLv_Indev, my_indev_cb);
 
+
   /* Initialize SquereLineStudio UI */
   ui_init();
 
+
   /* Initialize User Application */
   myApplMain_Init();
+
 
   /* launch lvgl ticker & Task */
   Lv_Tick.attach_ms(1, []() { lv_tick_inc(1); });
   (void)lv_timer_create(cyclic_process, 10, NULL);
   xTaskCreatePinnedToCore(lvgl_task, "lvgl", 8192, NULL, 2, NULL, 1);
+
 
   Serial.println("Initialised. GO!!");
 }
@@ -224,6 +241,8 @@ static void cyclic_process(lv_timer_t * timer)
 }
 
 /* ----------------------------------------------------------------- my_disp_cb */
+/* This function is invoked by LVGL after each component (object) has finished rendering. */
+/* In this project/branch, it expands the pixel data into the full‑screen buffer. */
 static void my_disp_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
   uint32_t index = 0;
   uint16_t lo = 0;
@@ -238,8 +257,9 @@ static void my_disp_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_ma
   }
   lv_display_flush_ready(disp);
 }
-
 /* ------------------------------------------------------------------ my_dma_cb */
+/* This function is called by the system when a DMA transfer completes. */
+/* In this project, it gives a semaphore to allow the next DMA transfer to begin. */
 static IRAM_ATTR bool my_dma_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -249,18 +269,35 @@ static IRAM_ATTR bool my_dma_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_pane
 }
 
 /* ---------------------------------------------------------------- my_indev_cb */
+/* This function is periodically called by LVGL to provide touch input data.    */
 static void my_indev_cb(lv_indev_t * indev, lv_indev_data_t * data)
 {
-    TouchPoint p;
-    bool ok = Touch.read(p);
+    data->state = LV_INDEV_STATE_RELEASED;
 
-    if (ok && p.touched) {
-        data->state   = LV_INDEV_STATE_PRESSED;
-        data->point.x = p.x;
-        data->point.y = p.y;
-        Serial.printf("touch: %d, %d\n", p.x, p.y);
-        myIllum_Flash();
-    } else {
-        data->state = LV_INDEV_STATE_RELEASED;
-    }
+    static const uint8_t touch_read_cmds[] = {
+        0xb5, 0xab, 0xa5, 0x5a, 0x00, 0x00, 0x00, 0x08};
+    Wire.beginTransmission(TOUCH_I2C_ADDR);
+    Wire.write(touch_read_cmds, sizeof(touch_read_cmds));
+    if (Wire.endTransmission() != 0) return;
+    delayMicroseconds(10);
+ 
+    Wire.requestFrom(TOUCH_I2C_ADDR, (uint8_t)8);
+    /* rxd format : 00, nz, xx, xx, yy, yy, ##, ## */
+    uint8_t rxd[8] = {0};
+    int i = 0;
+    while (Wire.available() && i < 8) rxd[i++] = Wire.read();
+    if (i < 8) return;
+    if (rxd[0] != 0) return;
+    if (rxd[1] == 0) return;
+
+    uint16_t raw_x = ((rxd[2] & 0x0F) << 8) | rxd[3];
+    uint16_t raw_y = ((rxd[4] & 0x0F) << 8) | rxd[5];
+
+    data->point.x = std::min<uint16_t>((int16_t)(LCD_HEIGHT -1), (int16_t)(raw_y));
+    data->point.y = std::min<uint16_t>((int16_t)(LCD_WIDTH -1), (int16_t)(LCD_WIDTH - raw_x));
+    data->state = LV_INDEV_STATE_PRESSED;
+
+    Serial.printf("touch: %d, %d\n", data->point.x, data->point.y);
+    myIllum_Flash();
+
 }

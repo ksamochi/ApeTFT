@@ -16,7 +16,7 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "esp_check.h"
-#include "../esp_lcd_touch/esp_lcd_touch.h"
+//#include "../esp_lcd_touch/esp_lcd_touch.h"
 
 #include "esp_rom_sys.h"
 
@@ -47,6 +47,7 @@ static esp_err_t panel_axs15231b_swap_xy(esp_lcd_panel_t *panel, bool swap_axes)
 static esp_err_t panel_axs15231b_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap);
 static esp_err_t panel_axs15231b_disp_off(esp_lcd_panel_t *panel, bool off);
 
+#if __has_include("esp_lcd_touch.h")
 static esp_err_t touch_axs15231b_read_data(esp_lcd_touch_handle_t tp);
 static bool touch_axs15231b_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x, uint16_t *y, uint16_t *strength, uint8_t *point_num, uint8_t max_point_num);
 static esp_err_t touch_axs15231b_del(esp_lcd_touch_handle_t tp);
@@ -54,6 +55,7 @@ static esp_err_t touch_axs15231b_reset(esp_lcd_touch_handle_t tp);
 
 static esp_err_t i2c_read_bytes(esp_lcd_touch_handle_t tp, int reg, uint8_t *data, uint8_t len);
 static esp_err_t i2c_write_bytes(esp_lcd_touch_handle_t tp, int reg, const uint8_t *data, uint8_t len);
+#endif /* __has_include("esp_lcd_touch.h") */
 
 typedef struct {
     esp_lcd_panel_t base;
@@ -403,6 +405,8 @@ static esp_err_t panel_axs15231b_disp_off(esp_lcd_panel_t *panel, bool off)
     return ESP_OK;
 }
 
+#if __has_include("esp_lcd_touch.h")
+
 esp_err_t esp_lcd_touch_new_i2c_axs15231b(const esp_lcd_panel_io_handle_t io, const esp_lcd_touch_config_t *config, esp_lcd_touch_handle_t *tp)
 {
     ESP_RETURN_ON_FALSE(io, ESP_ERR_INVALID_ARG, TAG, "Invalid io");
@@ -557,3 +561,5 @@ static esp_err_t i2c_write_bytes(esp_lcd_touch_handle_t tp, int reg, const uint8
 
     return esp_lcd_panel_io_tx_param(tp->io, reg, data, len);
 }
+
+#endif /* __has_include("esp_lcd_touch.h") */

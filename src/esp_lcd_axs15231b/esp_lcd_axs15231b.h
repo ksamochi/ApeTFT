@@ -11,7 +11,7 @@
 #pragma once
 
 #include "hal/spi_ll.h"
-#include "../esp_lcd_touch/esp_lcd_touch.h"
+//#include "../esp_lcd_touch/esp_lcd_touch.h"
 #include "esp_lcd_panel_vendor.h"
 
 #ifdef __cplusplus
@@ -153,6 +153,8 @@ esp_err_t esp_lcd_new_panel_axs15231b(const esp_lcd_panel_io_handle_t io, const 
         },                                                      \
     }
 
+#if __has_include("esp_lcd_touch.h")
+
 /**
  * @brief Create a new AXS15231B1B touch driver
  *
@@ -201,6 +203,8 @@ esp_err_t esp_lcd_touch_new_i2c_axs15231b(const esp_lcd_panel_io_handle_t io, co
         },                                                      \
         .scl_speed_hz = scl_speed_hz,                         \
     }
+
+#endif /* __has_include("esp_lcd_touch.h") */
 
 #ifdef __cplusplus
 }
