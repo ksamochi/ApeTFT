@@ -207,7 +207,7 @@ void loop()
   static uint32_t last_tick = 0;
   uint32_t now = lv_tick_get();
   uint32_t fint = now - last_tick;
-  if (fint >= 90) {
+  if (fint >= 100) {
     int64_t t0 = esp_timer_get_time();  // us
     for (uint32_t ofs = 0; ofs < LCD_HEIGHT; ofs += DMA_BUF_LINE) {
       uint32_t h = DMA_BUF_LINE;
@@ -242,17 +242,16 @@ static void cyclic_process(lv_timer_t * timer)
 
 /* ----------------------------------------------------------------- my_disp_cb */
 /* This function is invoked by LVGL after each component (object) has finished rendering. */
-/* In this project/branch, it expands the pixel data into the full‑screen buffer. */
+/* In this project/branch, it rotates the image by 90 degrees and expands the pixel data */
+/* into the full-screen buffer. */
 static void my_disp_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
-  uint32_t index = 0;
-  uint16_t lo = 0;
-  uint16_t hi = 0;
-  for ( uint16_t y = area->y1; y <= area->y2; y++) {
-    for ( uint16_t x = area->x1; x <= area->x2; x++) {
-      lo = px_map[index + 1];
-      hi = px_map[index] << 8;
-      LcdBuf[(x + 1) * SCREEN_HEIGHT - y -1] = hi | lo;
-      index += 2;
+  uint16_t *src = (uint16_t *)px_map;
+  for (uint16_t dstx = LCD_WIDTH - area->y1; LCD_WIDTH - area->y2 <= dstx; dstx--) {
+    uint32_t dst = area->x1 * LCD_WIDTH + dstx - 1;
+    for (uint16_t dsty = area->x1; dsty <= area->x2; dsty++) {
+      uint16_t c = *src++;
+      LcdBuf[dst] = (c >> 8) | (c << 8);
+      dst += LCD_WIDTH;
     }
   }
   lv_display_flush_ready(disp);
