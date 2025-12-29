@@ -14,7 +14,7 @@
 > `main`: Application core (UI/LVGL logic, Hardware‑independent modules "my..."). 
 >>`cpu-all`: whole screen CPU transfer version (ArduinoGFX + JC3248W535-Driver)
 >
->>`dma-all`: whole screen DMA transfer version (esp_lcd_axs15231b + esp_lcd_touch)
+>>`dma-all`: whole screen DMA transfer version (esp_lcd_axs15231b + wire)
 >
 >>`dma-part`: partial DMA transfer version ( future vision )
 >
@@ -122,7 +122,6 @@ ApeTFT
       ├─GFX Library for Arduino	( for CPU transfer ver.)
       ├─JC3248W535-Driver		( for CPU transfer ver.)
       ├─esp_lcd_axs15231b		( for DMA transfer ver.)
-      ├─esp_lcd_touch			( for DMA transfer ver.)
       ├─lvgl
       ├─lv_conf.h			... LVGL configuration
       ├─ui					... SquareLineStudio exports
