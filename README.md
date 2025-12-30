@@ -14,9 +14,11 @@
 > `main`: Application core (UI/LVGL logic, Hardware‑independent modules "my..."). 
 >>`cpu-all`: whole screen CPU transfer version (ArduinoGFX + JC3248W535-Driver)
 >
->>`dma-all`: whole screen DMA transfer version (esp_lcd_axs15231b + wire)
+>>`dma-all`: whole screen DMA transfer version (esp_lcd_axs15231b)
 >
->>`dma-part`: partial DMA transfer version ( future vision )
+>>~~`dma-part`: partial DMA transfer version ( future vision )~~  
+>> !! JC3248W535 Determined to be impossible with the JC3248W535 hardware; branch permanently retired.Rotation via MADCTL and the specification of drawing start positions via CASET/RASET do not function as expected, and the panel operates under a design assumption of full‑frame transfers using RAMWR–RAMWRC. Although it is theoretically possible that these features could be enabled through undocumented initialization registers, no such information has been published, and as of 2025, not a single confirmed case of successful partial‑region updates has been found.
+>> 
 >
 <br><br>
 
@@ -122,6 +124,7 @@ ApeTFT
       ├─GFX Library for Arduino	( for CPU transfer ver.)
       ├─JC3248W535-Driver		( for CPU transfer ver.)
       ├─esp_lcd_axs15231b		( for DMA transfer ver.)
+      ├─esp_lcd_touch			( for DMA transfer ver.)
       ├─lvgl
       ├─lv_conf.h			... LVGL configuration
       ├─ui					... SquareLineStudio exports
