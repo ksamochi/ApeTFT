@@ -124,7 +124,6 @@ ApeTFT
       ├─GFX Library for Arduino	( for CPU transfer ver.)
       ├─JC3248W535-Driver		( for CPU transfer ver.)
       ├─esp_lcd_axs15231b		( for DMA transfer ver.)
-      ├─esp_lcd_touch			( for DMA transfer ver.)
       ├─lvgl
       ├─lv_conf.h			... LVGL configuration
       ├─ui					... SquareLineStudio exports
