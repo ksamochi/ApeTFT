@@ -43,6 +43,7 @@ void mySettingMgr_Init(void)
         int c_pos;
         /* trim & form check */
         line.trim();
+        line.replace("\r", "");
         int validlen = line.length();
         c_pos = line.indexOf('/');
         if (c_pos >= 0) validlen = min(validlen, c_pos);
@@ -72,8 +73,11 @@ void mySettingMgr_Init(void)
         char *endptr;
         long value = strtol(dat, &endptr, 10);
         if (*endptr != '\0') {
-            prefs.putString(key, dat);
-            Serial.printf("Import Setting(str)... %s = %s\n", key, dat);
+            if (datStr.startsWith("\"") && datStr.endsWith("\"")) {
+                datStr = datStr.substring(1, datStr.length() - 1);
+            }
+            prefs.putString(key, datStr);
+            Serial.printf("Import Setting(str)... %s = %s\n", key, datStr.c_str());
         } else {
             prefs.putInt(key, (int)value);
             Serial.printf("Import Setting(int)... %s = %d\n", key, (int)value);

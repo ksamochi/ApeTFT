@@ -14,8 +14,10 @@
 # key,data    // comments ( Leading and trailing spaces and tabs are trimmed. )
 #-------------------------------------------------------------------------------
 
-//wifissid,xxxx's iPhone                ,// for myClock 
-//wifipass,xxxx-xxxx-xxxx-xxxx          ,// for myClock
+//wifissidhome,xxxx's homeWiFi          ,// for myClock 
+//wifipasshome,xxxx-xxxx-xxxx-xxxx      ,// for myClock
+//wifissidsmp,xxxx's iPhone             ,// for myClock 
+//wifipasssmp,xxxx-xxxx-xxxx-xxxx       ,// for myClock
 
 //spdrate,276912000                     ,// -0xFFFFFFFF[us/0.1kph] for mySpeed
 //spddelay,1                            ,// 1-255(fast - slow) for mySpeed
