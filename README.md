@@ -104,7 +104,7 @@ LVGL Include Path=..\lvgl\lvgl.h  (* embedded directly into the source code as #
 
 
 ## <mark>Setup (with PlatformIO)</mark>
-- ... In preparation ...
+- The APIs used in this project match the ESP-IDF subset included in the ESP32 board package for the Arduino IDE. However, they are not compatible with the ESP-IDF version used by PlatformIO’s Arduino framework. Because of this mismatch, the source code cannot be shared between the two environments, and PlatformIO support will not be provided for the time being.
 <br><br>
 
 
