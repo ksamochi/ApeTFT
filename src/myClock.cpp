@@ -46,12 +46,16 @@ void myClock_Init(void)
     PASSsmp = prefs.getString("wifipasssmp", pass_def);
     prefs.end();
 
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_STA);
+    delay(100);
+    WiFi.begin(SSIDhome.c_str(), PASShome.c_str());
+
     ClockInfo.tm_hour = -1;
     ClockInfo.tm_min  = -1;
     ClockInfo.tm_sec  = -1;
     clkSyncPhase = 1;
-    clkSyncTimeout = millis() + 2000;
-    WiFi.begin(SSIDhome.c_str(), PASShome.c_str());
+    clkSyncTimeout = millis() + 3000;
 
     Serial.println("myClock_Init_Done.");
 }
